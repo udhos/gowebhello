@@ -70,7 +70,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
   <body>
     <h1>gowebhello root page</h1>
     <h2>Welcome!</h2>
-	Sever hostname: %s<br>
+	Application version: 1<br>
+	Server hostname: %s<br>
 	Your address: %s<br>
 	Timestamp: %s<br>
     %s
