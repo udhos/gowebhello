@@ -10,8 +10,11 @@ import (
 )
 
 var knownPaths []string
+var boottime time.Time
 
 func main() {
+
+	boottime = time.Now()
 
 	currDir, err := os.Getwd()
 	if err != nil {
@@ -74,7 +77,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	Application arguments: %v<br>
 	Server hostname: %s<br>
 	Your address: %s<br>
-	Timestamp: %s<br>
+	Current time: %s<br>
+	Uptime: %s<br>
     %s
     <h2>All known paths:</h2>
     %s
@@ -84,12 +88,12 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	host, errHost := os.Hostname()
 	if errHost != nil {
-	   host = host + " (error: " + errHost.Error() + ")"
+		host = host + " (error: " + errHost.Error() + ")"
 	}
 
 	now := time.Now()
 
-	rootPage := fmt.Sprintf(rootStr, os.Args, host, r.RemoteAddr, now, errMsg, paths)
+	rootPage := fmt.Sprintf(rootStr, os.Args, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
 
 	io.WriteString(w, rootPage)
 }
