@@ -16,7 +16,7 @@ echo $0: $main
 [ -r "$main" ] || die "unable to read: $main"
 
 # kill previous instance
-pkill -f -9 '^.+go-build.+main$'
+pkill -9 -f '^.+go-build.+main$'
 
 # start new instance
 #nohup /usr/local/go/bin/go run $main &
