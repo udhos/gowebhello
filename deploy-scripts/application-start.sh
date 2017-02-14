@@ -19,5 +19,7 @@ echo $0: $main
 pkill -f -9 '^.+go-build.+main$'
 
 # start new instance
-nohup /usr/local/go/bin/go run $main &
+#nohup /usr/local/go/bin/go run $main &
+# http://docs.aws.amazon.com/codedeploy/latest/userguide/troubleshooting-deployments.html#troubleshooting-long-running-processes
+/usr/local/go/bin/go run $main >/dev/null 2>/dev/null </dev/null &
 
