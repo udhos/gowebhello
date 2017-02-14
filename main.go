@@ -73,8 +73,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
   <body>
     <h1>gowebhello root page</h1>
     <h2>Welcome!</h2>
-	Application version: 1<br>
+	Application version: 2<br>
 	Application arguments: %v<br>
+	Application dir: %s<br>
 	Server hostname: %s<br>
 	Your address: %s<br>
 	Current time: %s<br>
@@ -86,6 +87,11 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 </html>
 `
 
+	cwd, errCwd := os.Getwd()
+	if errCwd != nil {
+		cwd = cwd + " (error: " + errCwd.Error() + ")"
+	}
+
 	host, errHost := os.Hostname()
 	if errHost != nil {
 		host = host + " (error: " + errHost.Error() + ")"
@@ -93,7 +99,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	rootPage := fmt.Sprintf(rootStr, os.Args, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
+	rootPage := fmt.Sprintf(rootStr, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
 
 	io.WriteString(w, rootPage)
 }
