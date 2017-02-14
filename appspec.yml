@@ -1,0 +1,22 @@
+version: 0.0
+os: linux
+files:
+  - source: main.go
+    destination: /gowebhello
+hooks:
+  BeforeInstall:
+    - location: deploy-scripts/unzip-resource-bundle1.sh
+      timeout: 30
+    - location: deploy-scripts/unzip-resource-bundle2.sh
+      timeout: 30
+  AfterInstall:
+    - location: deploy-scripts/run-tests.sh
+      timeout: 30
+  ApplicationStart:
+    - location: deploy-scripts/application-start.sh
+      timeout: 30
+  ValidateService:
+    - location: deploy-scripts/validate-service.sh
+      timeout: 30
+      runas: ec2-user
+      
