@@ -19,5 +19,5 @@ echo $0: $main
 pkill -f -9 '^.+go-build.+main$'
 
 # start new instance
-nohup go run $main &
+nohup /usr/local/go/bin/go run $main &
 
