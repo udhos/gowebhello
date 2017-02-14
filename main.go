@@ -71,6 +71,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
     <h1>gowebhello root page</h1>
     <h2>Welcome!</h2>
 	Application version: 1<br>
+	Application arguments: %v<br>
 	Server hostname: %s<br>
 	Your address: %s<br>
 	Timestamp: %s<br>
@@ -88,7 +89,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	rootPage := fmt.Sprintf(rootStr, host, r.RemoteAddr, now, errMsg, paths)
+	rootPage := fmt.Sprintf(rootStr, os.Args, host, r.RemoteAddr, now, errMsg, paths)
 
 	io.WriteString(w, rootPage)
 }
