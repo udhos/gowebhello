@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -73,7 +74,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
   <body>
     <h1>gowebhello root page</h1>
     <h2>Welcome!</h2>
-	Application version: 2<br>
+	Golang version: %s<br>
+	Application version: 3<br>
 	Application arguments: %v<br>
 	Application dir: %s<br>
 	Server hostname: %s<br>
@@ -99,7 +101,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	rootPage := fmt.Sprintf(rootStr, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
+	rootPage := fmt.Sprintf(rootStr, runtime.Version(), os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
 
 	io.WriteString(w, rootPage)
 }
