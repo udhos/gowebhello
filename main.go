@@ -29,7 +29,7 @@ func main() {
 	addr := ":8080"
 
 	if len(os.Args) > 1 {
-	   addr = os.Args[1]
+		addr = os.Args[1]
 	}
 
 	log.Printf("serving on port TCP %s", addr)
