@@ -77,6 +77,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
   </head>
   <body>
     <h1>gowebhello root page</h1>
+    <p>
+    <a href="https://github.com/udhos/gowebhello">gowebhello</a> is a simple golang replacement for 'python -m SimpleHTTPServer'.
+    </p>
     <h2>Welcome!</h2>
 	Golang version: %s<br>
 	Application version: 3<br>
