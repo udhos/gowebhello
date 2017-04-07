@@ -8,5 +8,5 @@ Usage
     $ go get github.com/udhos/gowebhello
     $ go install github.com/udhos/gowebhello
     $ ~/go/bin/gowebhello
-
-# then open http://localhost:8080
+    
+    # then open http://localhost:8080
