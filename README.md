@@ -11,5 +11,8 @@ Usage
     $ go get github.com/udhos/gowebhello
     $ go install github.com/udhos/gowebhello
     $ ~/go/bin/gowebhello
-    
-    # then open http://localhost:8080
+    $ ~/go/bin/gowebhello
+    2017/04/07 18:20:14 registering static directory /home/lab/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/04/07 18:20:14 serving on port TCP :8080
+
+    Then open http://localhost:8080
