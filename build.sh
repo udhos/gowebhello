@@ -11,4 +11,4 @@ go tool vet .
 [ -x $GOPATH/bin/golint ] && $GOPATH/bin/golint main.go
 [ -x $GOPATH/bin/staticcheck ] && $GOPATH/bin/staticcheck main.go
 go test github.com/udhos/gowebhello
-go install github.com/udhos/gowebhello
+go install -v github.com/udhos/gowebhello
