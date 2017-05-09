@@ -24,7 +24,13 @@ msg home: $home
 
 cd $home
 
-wget -qO- https://raw.githubusercontent.com/udhos/update-golang/master/update-golang.sh | bash
+wget -qO update-golang.sh  https://raw.githubusercontent.com/udhos/update-golang/master/update-golang.sh
+chmod a+rx update-golang.sh
+
+export DESTINATION=$PWD/golang
+mkdir $DESTINATION
+PROFILED=$HOME/.profile ./update-golang.sh
+
 
 wget -qO main.go gowebhello.go https://raw.githubusercontent.com/udhos/gowebhello/master/main.go 
 
