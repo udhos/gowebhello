@@ -1,10 +1,26 @@
 #!/bin/bash
 
-home=/home/ubuntu/static
-
-[ -n "$1" ] && home=$1
+home=/tmp/staticweb
+log=$home/staticweb.log
 
 mkdir $home
+
+me=`basename $0`
+msg() {
+    echo >>$log $me: $*
+}
+
+redir() {
+    while read i; do
+        msg $i
+    done
+}
+
+msg -- `date` begin
+
+msg user: `id`
+msg pwd: $PWD
+msg home: $home
 
 cd $home
 
@@ -12,6 +28,8 @@ wget -qO- https://raw.githubusercontent.com/udhos/update-golang/master/update-go
 
 wget -qO main.go gowebhello.go https://raw.githubusercontent.com/udhos/gowebhello/master/main.go 
 
-nohup /usr/local/go/bin/go run main.go >log.txt 2>&1 &
+msg -- `date` end
+
+nohup /usr/local/go/bin/go run main.go >>$log 2>&1 &
 
 
