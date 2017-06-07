@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -17,26 +18,51 @@ func main() {
 
 	boottime = time.Now()
 
+	tls := true
+
 	currDir, err := os.Getwd()
 	if err != nil {
 		log.Panicf("Getwd: %s", err)
+	}
+
+	var addr, key, cert string
+
+	flag.StringVar(&key, "key", "key.pem", "TLS key file")
+	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
+	flag.StringVar(&addr, "addr", ":8080", "listen address")
+	flag.Parse()
+
+	if !fileExists(key) {
+		log.Printf("TLS key file not found: %s", key)
+		tls = false
+	}
+
+	if !fileExists(cert) {
+		log.Printf("TLS cert file not found: %s", cert)
+		tls = false
 	}
 
 	http.HandleFunc("/", rootHandler) // default handler
 
 	registerStatic("/www/", currDir)
 
-	addr := ":8080"
+	log.Printf("serving on port TCP %s TLS=%v", addr, tls)
 
-	if len(os.Args) > 1 {
-		addr = os.Args[1]
+	if tls {
+		if err := http.ListenAndServeTLS(addr, cert, key, nil); err != nil {
+			log.Panicf("ListenAndServeTLS: %s: %s", addr, err)
+		}
+		return
 	}
-
-	log.Printf("serving on port TCP %s", addr)
 
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Panicf("ListenAndServe: %s: %s", addr, err)
 	}
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
 
 type staticHandler struct {
