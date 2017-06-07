@@ -16,11 +16,24 @@ Build, install and run:
     $ export GOPATH=~/go ;# not needed since go1.8
     $ go get github.com/udhos/gowebhello
     $ go install github.com/udhos/gowebhello
-    $ ~/go/bin/gowebhello
-    2017/04/07 18:20:14 registering static directory /home/lab/go/src/github.com/udhos/gowebhello as www path /www/
-    2017/04/07 18:20:14 serving on port TCP :8080
+    
+Example with TLS:
 
-Then open http://localhost:8080, or https://localhost:8080 for TLS.
+    $ ~/go/bin/gowebhello 
+    2017/06/06 23:33:49 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/06 23:33:49 serving on port TCP :8080 TLS=true
+
+    Then open http://localhost:8080
+
+Example without TLS:
+
+    $ ~/go/bin/gowebhello
+    2017/06/06 23:35:45 TLS key file not found: key.pem - disabling TLS
+    2017/06/06 23:35:45 TLS cert file not found: cert.pem - disabling TLS
+    2017/06/06 23:35:45 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/06 23:35:45 serving on port TCP :8080 TLS=false
+
+    Then open https://localhost:8080
 
 END
 ===

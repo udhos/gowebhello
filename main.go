@@ -33,12 +33,12 @@ func main() {
 	flag.Parse()
 
 	if !fileExists(key) {
-		log.Printf("TLS key file not found: %s", key)
+		log.Printf("TLS key file not found: %s - disabling TLS", key)
 		tls = false
 	}
 
 	if !fileExists(cert) {
-		log.Printf("TLS cert file not found: %s", cert)
+		log.Printf("TLS cert file not found: %s - disabling TLS", cert)
 		tls = false
 	}
 
