@@ -65,15 +65,15 @@ func main() {
 		}
 
 		if httpPort != httpsPort {
-			// Installs http-to-https redirect server
+			log.Printf("installing redirect from HTTP=%s to HTTPS=%s", addr, httpsPort)
+
+			redirectTLS := func(w http.ResponseWriter, r *http.Request) {
+				host := strings.Split(r.Host, ":")[0]
+				http.Redirect(w, r, "https://"+host+":"+httpsPort+r.RequestURI, http.StatusMovedPermanently)
+			}
+
+			// http-to-https redirect server
 			go func() {
-				log.Printf("installing redirect from HTTP=%s to HTTPS=%s", addr, httpsPort)
-
-				redirectTLS := func(w http.ResponseWriter, r *http.Request) {
-					host := strings.Split(r.Host, ":")[0]
-					http.Redirect(w, r, "https://"+host+":"+httpsPort+r.RequestURI, http.StatusMovedPermanently)
-				}
-
 				if err := http.ListenAndServe(addr, http.HandlerFunc(redirectTLS)); err != nil {
 					log.Fatalf("redirect: ListenAndServe: %s: %v", addr, err)
 				}
