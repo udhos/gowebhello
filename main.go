@@ -56,7 +56,7 @@ func (handler staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	msg := fmt.Sprintf("rootHandler: url=%s from=%s", r.URL.Path, r.RemoteAddr)
-	log.Printf(msg)
+	log.Print(msg)
 
 	var paths string
 	for _, p := range knownPaths {
