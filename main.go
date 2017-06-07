@@ -23,7 +23,7 @@ func main() {
 
 	currDir, err := os.Getwd()
 	if err != nil {
-		log.Panicf("Getwd: %s", err)
+		log.Fatalf("Getwd: %s", err)
 	}
 
 	var addr, httpsAddr, key, cert string
@@ -82,13 +82,13 @@ func main() {
 
 		// Serve TLS
 		if err := http.ListenAndServeTLS(httpsAddr, cert, key, nil); err != nil {
-			log.Panicf("ListenAndServeTLS: %s: %v", httpsAddr, err)
+			log.Fatalf("ListenAndServeTLS: %s: %v", httpsAddr, err)
 		}
 		return
 	}
 
 	if err := http.ListenAndServe(addr, nil); err != nil {
-		log.Panicf("ListenAndServe: %s: %v", addr, err)
+		log.Fatalf("ListenAndServe: %s: %v", addr, err)
 	}
 }
 
