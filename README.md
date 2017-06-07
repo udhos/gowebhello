@@ -20,20 +20,21 @@ Build, install and run:
 Example with TLS:
 
     $ ~/go/bin/gowebhello 
-    2017/06/06 23:33:49 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
-    2017/06/06 23:33:49 serving on port TCP :8080 TLS=true
+    2017/06/07 01:20:06 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/07 01:20:06 serving on port TCP HTTP=:8080 HTTPS=:8443 TLS=true
+    2017/06/07 01:20:06 installing redirect from HTTP=:8080 to HTTPS=8443
 
-    Then open http://localhost:8080
+    Then open https://localhost:8443
 
 Example without TLS:
 
-    $ ~/go/bin/gowebhello
-    2017/06/06 23:35:45 TLS key file not found: key.pem - disabling TLS
-    2017/06/06 23:35:45 TLS cert file not found: cert.pem - disabling TLS
-    2017/06/06 23:35:45 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
-    2017/06/06 23:35:45 serving on port TCP :8080 TLS=false
+    $ ~/go/bin/gowebhello 
+    2017/06/07 01:24:45 TLS key file not found: key.pem - disabling TLS
+    2017/06/07 01:24:45 TLS cert file not found: cert.pem - disabling TLS
+    2017/06/07 01:24:45 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/07 01:24:45 serving on port TCP HTTP=:8080 HTTPS=:8443 TLS=false
 
-    Then open https://localhost:8080
+    Then open http://localhost:8080
 
 END
 ===
