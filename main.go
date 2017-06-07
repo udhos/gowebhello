@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -25,11 +26,12 @@ func main() {
 		log.Panicf("Getwd: %s", err)
 	}
 
-	var addr, key, cert string
+	var addr, httpsAddr, key, cert string
 
 	flag.StringVar(&key, "key", "key.pem", "TLS key file")
 	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
-	flag.StringVar(&addr, "addr", ":8080", "listen address")
+	flag.StringVar(&addr, "addr", ":8080", "HTTP listen address")
+	flag.StringVar(&httpsAddr, "httpsAddr", ":8443", "HTTPS listen address")
 	flag.Parse()
 
 	if !fileExists(key) {
@@ -46,17 +48,47 @@ func main() {
 
 	registerStatic("/www/", currDir)
 
-	log.Printf("serving on port TCP %s TLS=%v", addr, tls)
+	log.Printf("serving on port TCP HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
 
 	if tls {
-		if err := http.ListenAndServeTLS(addr, cert, key, nil); err != nil {
-			log.Panicf("ListenAndServeTLS: %s: %s", addr, err)
+
+		httpPort := "80"
+		h := strings.Split(addr, ":")
+		if len(h) > 1 {
+			httpPort = h[1]
+		}
+
+		httpsPort := "443"
+		hs := strings.Split(httpsAddr, ":")
+		if len(hs) > 1 {
+			httpsPort = hs[1]
+		}
+
+		if httpPort != httpsPort {
+			// Installs http-to-https redirect server
+			go func() {
+				log.Printf("installing redirect from HTTP=%s to HTTPS=%s", addr, httpsPort)
+
+				redirectTLS := func(w http.ResponseWriter, r *http.Request) {
+					host := strings.Split(r.Host, ":")[0]
+					http.Redirect(w, r, "https://"+host+":"+httpsPort+r.RequestURI, http.StatusMovedPermanently)
+				}
+
+				if err := http.ListenAndServe(addr, http.HandlerFunc(redirectTLS)); err != nil {
+					log.Fatalf("redirect: ListenAndServe: %s: %v", addr, err)
+				}
+			}()
+		}
+
+		// Serve TLS
+		if err := http.ListenAndServeTLS(httpsAddr, cert, key, nil); err != nil {
+			log.Panicf("ListenAndServeTLS: %s: %v", httpsAddr, err)
 		}
 		return
 	}
 
 	if err := http.ListenAndServe(addr, nil); err != nil {
-		log.Panicf("ListenAndServe: %s: %s", addr, err)
+		log.Panicf("ListenAndServe: %s: %v", addr, err)
 	}
 }
 
