@@ -24,10 +24,11 @@ Example with TLS
 Enable TLS by providing a certificate.
 If you enable TLS, HTTP port will be redirected to HTTPS port.
 
-    $ ~/go/bin/gowebhello 
-    2017/06/07 01:20:06 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
-    2017/06/07 01:20:06 serving on port TCP HTTP=:8080 HTTPS=:8443 TLS=true
-    2017/06/07 01:20:06 installing redirect from HTTP=:8080 to HTTPS=8443
+    $ ~/go/bin/gowebhello
+    2017/06/08 11:24:03 registering static directory /home/lab/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/08 11:24:03 using TCP ports HTTP=:8080 HTTPS=:8443 TLS=true
+    2017/06/08 11:24:03 installing redirect from HTTP=:8080 to HTTPS=8443
+    2017/06/08 11:24:03 serving HTTPS on TCP :8443
 
     Then open https://localhost:8443
 
@@ -36,11 +37,11 @@ Example without TLS
 
 If you do not provide a certificate, TLS will be disabled.
 
-    $ ~/go/bin/gowebhello 
-    2017/06/07 01:24:45 TLS key file not found: key.pem - disabling TLS
-    2017/06/07 01:24:45 TLS cert file not found: cert.pem - disabling TLS
-    2017/06/07 01:24:45 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
-    2017/06/07 01:24:45 serving on port TCP HTTP=:8080 HTTPS=:8443 TLS=false
+    $ ~/go/bin/gowebhello -cert=badcert
+    2017/06/08 11:25:01 TLS cert file not found: badcert - disabling TLS
+    2017/06/08 11:25:01 registering static directory /home/lab/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/08 11:25:01 using TCP ports HTTP=:8080 HTTPS=:8443 TLS=false
+    2017/06/08 11:25:01 serving HTTP on TCP :8080
 
     Then open http://localhost:8080
 
@@ -50,8 +51,9 @@ Example with HTTPS only
 You can disable HTTP by specifying the same port to both -addr and -httpsAddr.
 
     $ ~/go/bin/gowebhello -addr :8443 -httpsAddr :8443
-    2017/06/08 10:37:33 registering static directory /home/lab/go/src/github.com/udhos/gowebhello as www path /www/
-    2017/06/08 10:37:33 serving on port TCP HTTP=:8443 HTTPS=:8443 TLS=true
+    2017/06/08 11:25:46 registering static directory /home/lab/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/08 11:25:46 using TCP ports HTTP=:8443 HTTPS=:8443 TLS=true
+    2017/06/08 11:25:46 serving HTTPS on TCP :8443
 
 END
 ===
