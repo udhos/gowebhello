@@ -48,7 +48,7 @@ func main() {
 
 	registerStatic("/www/", currDir)
 
-	log.Printf("serving on port TCP HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
+	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
 
 	if tls {
 
@@ -80,13 +80,14 @@ func main() {
 			}()
 		}
 
-		// Serve TLS
+		log.Printf("serving HTTPS on TCP %s", httpsAddr)
 		if err := http.ListenAndServeTLS(httpsAddr, cert, key, nil); err != nil {
 			log.Fatalf("ListenAndServeTLS: %s: %v", httpsAddr, err)
 		}
 		return
 	}
 
+	log.Printf("serving HTTP on TCP %s", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("ListenAndServe: %s: %v", addr, err)
 	}
