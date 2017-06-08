@@ -11,13 +11,18 @@ If you want to use TLS, you will need a certificate:
 
     $ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem
 
-Build, install and run:
+Building
+--------
 
     $ export GOPATH=~/go ;# not needed since go1.8
     $ go get github.com/udhos/gowebhello
     $ go install github.com/udhos/gowebhello
     
-Example with TLS:
+Example with TLS
+----------------
+
+Enable TLS by providing a certificate.
+If you enable TLS, HTTP port will be redirected to HTTPS port.
 
     $ ~/go/bin/gowebhello 
     2017/06/07 01:20:06 registering static directory /home/everton/go/src/github.com/udhos/gowebhello as www path /www/
@@ -26,7 +31,10 @@ Example with TLS:
 
     Then open https://localhost:8443
 
-Example without TLS:
+Example without TLS
+-------------------
+
+If you do not provide a certificate, TLS will be disabled.
 
     $ ~/go/bin/gowebhello 
     2017/06/07 01:24:45 TLS key file not found: key.pem - disabling TLS
@@ -35,6 +43,15 @@ Example without TLS:
     2017/06/07 01:24:45 serving on port TCP HTTP=:8080 HTTPS=:8443 TLS=false
 
     Then open http://localhost:8080
+
+Example with HTTPS only
+-----------------------
+
+You can disable HTTP by specifying the same port to both -addr and -httpsAddr.
+
+    $ ~/go/bin/gowebhello -addr :8443 -httpsAddr :8443
+    2017/06/08 10:37:33 registering static directory /home/lab/go/src/github.com/udhos/gowebhello as www path /www/
+    2017/06/08 10:37:33 serving on port TCP HTTP=:8443 HTTPS=:8443 TLS=true
 
 END
 ===
