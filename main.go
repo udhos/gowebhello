@@ -12,8 +12,13 @@ import (
 	"time"
 )
 
+const (
+	helloVersion = "0.1"
+)
+
 var knownPaths []string
 var boottime time.Time
+var banner string
 
 func main() {
 
@@ -32,6 +37,7 @@ func main() {
 	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
 	flag.StringVar(&addr, "addr", ":8080", "HTTP listen address")
 	flag.StringVar(&httpsAddr, "httpsAddr", ":8443", "HTTPS listen address")
+	flag.StringVar(&banner, "banner", "deploy #4", "banner will be displayed")
 	flag.Parse()
 
 	if !fileExists(key) {
@@ -51,45 +57,50 @@ func main() {
 	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
 
 	if tls {
-
-		httpPort := "80"
-		h := strings.Split(addr, ":")
-		if len(h) > 1 {
-			httpPort = h[1]
-		}
-
-		httpsPort := "443"
-		hs := strings.Split(httpsAddr, ":")
-		if len(hs) > 1 {
-			httpsPort = hs[1]
-		}
-
-		if httpPort != httpsPort {
-			log.Printf("installing redirect from HTTP=%s to HTTPS=%s", addr, httpsPort)
-
-			redirectTLS := func(w http.ResponseWriter, r *http.Request) {
-				host := strings.Split(r.Host, ":")[0]
-				http.Redirect(w, r, "https://"+host+":"+httpsPort+r.RequestURI, http.StatusMovedPermanently)
-			}
-
-			// http-to-https redirect server
-			go func() {
-				if err := http.ListenAndServe(addr, http.HandlerFunc(redirectTLS)); err != nil {
-					log.Fatalf("redirect: ListenAndServe: %s: %v", addr, err)
-				}
-			}()
-		}
-
-		log.Printf("serving HTTPS on TCP %s", httpsAddr)
-		if err := http.ListenAndServeTLS(httpsAddr, cert, key, nil); err != nil {
-			log.Fatalf("ListenAndServeTLS: %s: %v", httpsAddr, err)
-		}
+		serveHTTPS(addr, httpsAddr, cert, key)
 		return
 	}
 
 	log.Printf("serving HTTP on TCP %s", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("ListenAndServe: %s: %v", addr, err)
+	}
+}
+
+func serveHTTPS(addr, httpsAddr, cert, key string) {
+	httpPort := "80"
+	h := strings.Split(addr, ":")
+	if len(h) > 1 {
+		httpPort = h[1]
+	}
+
+	httpsPort := "443"
+	hs := strings.Split(httpsAddr, ":")
+	if len(hs) > 1 {
+		httpsPort = hs[1]
+	}
+
+	if httpPort != httpsPort {
+		log.Printf("installing redirect from HTTP=%s to HTTPS=%s", addr, httpsPort)
+
+		redirectTLS := func(w http.ResponseWriter, r *http.Request) {
+			host := strings.Split(r.Host, ":")[0]
+			//code := http.StatusMovedPermanently // 301 permanent
+			code := http.StatusFound // 302 temporary
+			http.Redirect(w, r, "https://"+host+":"+httpsPort+r.RequestURI, code)
+		}
+
+		// http-to-https redirect server
+		go func() {
+			if err := http.ListenAndServe(addr, http.HandlerFunc(redirectTLS)); err != nil {
+				log.Fatalf("redirect: ListenAndServe: %s: %v", addr, err)
+			}
+		}()
+	}
+
+	log.Printf("serving HTTPS on TCP %s", httpsAddr)
+	if err := http.ListenAndServeTLS(httpsAddr, cert, key, nil); err != nil {
+		log.Fatalf("ListenAndServeTLS: %s: %v", httpsAddr, err)
 	}
 }
 
@@ -140,8 +151,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
     <a href="https://github.com/udhos/gowebhello">gowebhello</a> is a simple golang replacement for 'python -m SimpleHTTPServer'.
     </p>
     <h2>Welcome!</h2>
+	gowebhello version: %s<br>
 	Golang version: %s<br>
-	Application version: 3<br>
+	Application banner: %s<br>
 	Application arguments: %v<br>
 	Application dir: %s<br>
 	Server hostname: %s<br>
@@ -167,7 +179,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	rootPage := fmt.Sprintf(rootStr, runtime.Version(), os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
+	rootPage := fmt.Sprintf(rootStr, helloVersion, runtime.Version(), banner, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
 
 	io.WriteString(w, rootPage)
 }
