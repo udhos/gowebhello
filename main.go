@@ -26,6 +26,9 @@ func main() {
 
 	tls := true
 
+	log.Print("version: ", helloVersion)
+	log.Print("runtime: ", runtime.Version())
+
 	currDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Getwd: %s", err)
@@ -39,6 +42,8 @@ func main() {
 	flag.StringVar(&httpsAddr, "httpsAddr", ":8443", "HTTPS listen address")
 	flag.StringVar(&banner, "banner", "deploy #4", "banner will be displayed")
 	flag.Parse()
+
+	log.Print("banner: ", banner)
 
 	if !fileExists(key) {
 		log.Printf("TLS key file not found: %s - disabling TLS", key)
