@@ -22,8 +22,8 @@ var boottime time.Time
 var banner string
 var requests int64
 
-func inc() {
-	atomic.AddInt64(&requests, 1)
+func inc() int64 {
+	return atomic.AddInt64(&requests, 1)
 }
 
 func get() int64 {
@@ -135,14 +135,14 @@ func registerStatic(path, dir string) {
 }
 
 func (handler staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	inc()
-	log.Printf("staticHandler.ServeHTTP url=%s from=%s req=%d", r.URL.Path, r.RemoteAddr, get())
+	count := inc()
+	log.Printf("staticHandler.ServeHTTP req=%d url=%s from=%s", count, r.URL.Path, r.RemoteAddr)
 	handler.innerHandler.ServeHTTP(w, r)
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	inc()
-	msg := fmt.Sprintf("rootHandler: url=%s from=%s req=%d", r.URL.Path, r.RemoteAddr, get())
+	count := inc()
+	msg := fmt.Sprintf("rootHandler: req=%d url=%s from=%s", count, r.URL.Path, r.RemoteAddr)
 	log.Print(msg)
 
 	var paths string
