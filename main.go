@@ -9,6 +9,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -19,6 +20,15 @@ const (
 var knownPaths []string
 var boottime time.Time
 var banner string
+var requests int64
+
+func inc() {
+	atomic.AddInt64(&requests, 1)
+}
+
+func get() int64 {
+	return atomic.LoadInt64(&requests)
+}
 
 func main() {
 
@@ -125,12 +135,14 @@ func registerStatic(path, dir string) {
 }
 
 func (handler staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("staticHandler.ServeHTTP url=%s from=%s", r.URL.Path, r.RemoteAddr)
+	inc()
+	log.Printf("staticHandler.ServeHTTP url=%s from=%s req=%d", r.URL.Path, r.RemoteAddr, get())
 	handler.innerHandler.ServeHTTP(w, r)
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	msg := fmt.Sprintf("rootHandler: url=%s from=%s", r.URL.Path, r.RemoteAddr)
+	inc()
+	msg := fmt.Sprintf("rootHandler: url=%s from=%s req=%d", r.URL.Path, r.RemoteAddr, get())
 	log.Print(msg)
 
 	var paths string
@@ -165,6 +177,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	Your address: %s<br>
 	Current time: %s<br>
 	Uptime: %s<br>
+	Requests: %d<br>
     %s
     <h2>All known paths:</h2>
     %s
@@ -184,7 +197,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	rootPage := fmt.Sprintf(rootStr, helloVersion, runtime.Version(), banner, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), errMsg, paths)
+	rootPage := fmt.Sprintf(rootStr, helloVersion, runtime.Version(), banner, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
 
 	io.WriteString(w, rootPage)
 }
