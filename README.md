@@ -8,6 +8,9 @@ gowebhello can also be configured as an HTTPS web server using SSL certificates.
 Usage
 =====
 
+HTTPS
+-----
+
 If you want to use TLS, you will need a certificate:
 
     $ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem
@@ -15,10 +18,17 @@ If you want to use TLS, you will need a certificate:
 Building
 --------
 
-    $ export GOPATH=~/go ;# not needed since go1.8
+    $ export GOPATH=~/go ;# GOPATH no longer required, since go1.8
     $ go get github.com/udhos/gowebhello
     $ go install github.com/udhos/gowebhello
-    
+
+Running
+-------
+
+Use the '-h' switch to get command line help.
+
+    $ ~/go/bin/gowebhello -h
+
 Example with TLS
 ----------------
 
