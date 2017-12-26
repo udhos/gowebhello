@@ -3,6 +3,7 @@
 
 # gowebhello
 gowebhello is a simple golang replacement for 'python -m SimpleHTTPServer'.
+gowebhello can also be configured as an HTTPS web server using SSL certificates.
 
 Usage
 =====
