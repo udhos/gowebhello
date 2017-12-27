@@ -131,7 +131,7 @@ type staticHandler struct {
 func registerStatic(path, dir string) {
 	http.Handle(path, staticHandler{http.StripPrefix(path, http.FileServer(http.Dir(dir)))})
 	knownPaths = append(knownPaths, path)
-	log.Printf("registering static directory %s as www path %s", dir, path)
+	log.Printf("mapping www path %s to directory %s", path, dir)
 }
 
 func (handler staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
