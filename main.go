@@ -8,13 +8,14 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"sync/atomic"
 	"time"
 )
 
 const (
-	helloVersion = "0.1"
+	helloVersion = "0.2"
 )
 
 var knownPaths []string
@@ -155,7 +156,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		errMsg = fmt.Sprintf("<h2>Path not found!</h2>Path not found: [%s]", r.URL.Path)
 	}
 
-	rootStr :=
+	header :=
 		`<!DOCTYPE html>
 
 <html>
@@ -167,7 +168,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
     <p>
     <a href="https://github.com/udhos/gowebhello">https://github.com/udhos/gowebhello</a> is a simple golang replacement for 'python -m SimpleHTTPServer'.
     </p>
-    <h2>Welcome!</h2>
+`
+	bodyTempl :=
+		`<h2>Welcome!</h2>
 	gowebhello version: %s<br>
 	Golang version: %s<br>
 	Application banner: %s<br>
@@ -181,7 +184,10 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
     %s
     <h2>All known paths:</h2>
     %s
-  </body>
+`
+
+	footer :=
+		`</body>
 </html>
 `
 
@@ -197,7 +203,28 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	rootPage := fmt.Sprintf(rootStr, helloVersion, runtime.Version(), banner, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), banner, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
 
-	io.WriteString(w, rootPage)
+	io.WriteString(w, header)
+	io.WriteString(w, body)
+	showHeaders(w, r)
+	io.WriteString(w, footer)
+}
+
+func showHeaders(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "<h2>Headers</h2>")
+
+	var headers []string
+	for k, v := range r.Header {
+		sort.Strings(v)
+		for _, vv := range v {
+			headers = append(headers, k+": "+vv+"<br>\n")
+		}
+	}
+
+	sort.Strings(headers)
+
+	for _, h := range headers {
+		io.WriteString(w, h)
+	}
 }
