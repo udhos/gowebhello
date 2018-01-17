@@ -212,11 +212,10 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func showHeaders(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "<h2>Headers</h2>")
+	io.WriteString(w, "<h2>Headers</h2>\n")
 
 	var headers []string
 	for k, v := range r.Header {
-		sort.Strings(v)
 		for _, vv := range v {
 			headers = append(headers, k+": "+vv+"<br>\n")
 		}
