@@ -71,7 +71,8 @@ func main() {
 		tls = false
 	}
 
-	http.HandleFunc("/", rootHandler) // default handler
+	// default handler
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { rootHandler(w, r, keepalive) })
 
 	registerStatic("/www/", currDir)
 
@@ -158,7 +159,7 @@ func (handler staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.innerHandler.ServeHTTP(w, r)
 }
 
-func rootHandler(w http.ResponseWriter, r *http.Request) {
+func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 	count := inc()
 	msg := fmt.Sprintf("rootHandler: req=%d url=%s from=%s", count, r.URL.Path, r.RemoteAddr)
 	log.Print(msg)
@@ -221,6 +222,10 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 
 	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), banner, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
+
+	if !keepalive {
+		w.Header().Set("Connection", "close")
+	}
 
 	io.WriteString(w, header)
 	io.WriteString(w, body)
