@@ -46,15 +46,20 @@ func main() {
 	}
 
 	var addr, httpsAddr, key, cert string
+	var disableKeepalive bool
 
 	flag.StringVar(&key, "key", "key.pem", "TLS key file")
 	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
 	flag.StringVar(&addr, "addr", ":8080", "HTTP listen address")
 	flag.StringVar(&httpsAddr, "httpsAddr", ":8443", "HTTPS listen address")
 	flag.StringVar(&banner, "banner", "deploy #4", "banner will be displayed")
+	flag.BoolVar(&disableKeepalive, "disableKeepalive", false, "disable keepalive")
 	flag.Parse()
 
+	keepalive := !disableKeepalive
+
 	log.Print("banner: ", banner)
+	log.Print("keepalive: ", keepalive)
 
 	if !fileExists(key) {
 		log.Printf("TLS key file not found: %s - disabling TLS", key)
@@ -73,17 +78,17 @@ func main() {
 	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
 
 	if tls {
-		serveHTTPS(addr, httpsAddr, cert, key)
+		serveHTTPS(addr, httpsAddr, cert, key, keepalive)
 		return
 	}
 
 	log.Printf("serving HTTP on TCP %s", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
-		log.Fatalf("ListenAndServe: %s: %v", addr, err)
+	if err := listenAndServe(addr, nil, keepalive); err != nil {
+		log.Fatalf("listenAndServe: %s: %v", addr, err)
 	}
 }
 
-func serveHTTPS(addr, httpsAddr, cert, key string) {
+func serveHTTPS(addr, httpsAddr, cert, key string, keepalive bool) {
 	httpPort := "80"
 	h := strings.Split(addr, ":")
 	if len(h) > 1 {
@@ -108,16 +113,28 @@ func serveHTTPS(addr, httpsAddr, cert, key string) {
 
 		// http-to-https redirect server
 		go func() {
-			if err := http.ListenAndServe(addr, http.HandlerFunc(redirectTLS)); err != nil {
-				log.Fatalf("redirect: ListenAndServe: %s: %v", addr, err)
+			if err := listenAndServe(addr, http.HandlerFunc(redirectTLS), keepalive); err != nil {
+				log.Fatalf("redirect: listenAndServe: %s: %v", addr, err)
 			}
 		}()
 	}
 
 	log.Printf("serving HTTPS on TCP %s", httpsAddr)
-	if err := http.ListenAndServeTLS(httpsAddr, cert, key, nil); err != nil {
-		log.Fatalf("ListenAndServeTLS: %s: %v", httpsAddr, err)
+	if err := listenAndServeTLS(httpsAddr, cert, key, nil, keepalive); err != nil {
+		log.Fatalf("listenAndServeTLS: %s: %v", httpsAddr, err)
 	}
+}
+
+func listenAndServe(addr string, handler http.Handler, keepalive bool) error {
+	server := &http.Server{Addr: addr, Handler: handler}
+	server.SetKeepAlivesEnabled(keepalive)
+	return server.ListenAndServe()
+}
+
+func listenAndServeTLS(addr, certFile, keyFile string, handler http.Handler, keepalive bool) error {
+	server := &http.Server{Addr: addr, Handler: handler}
+	server.SetKeepAlivesEnabled(keepalive)
+	return server.ListenAndServeTLS(certFile, keyFile)
 }
 
 func fileExists(path string) bool {
