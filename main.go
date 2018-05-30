@@ -189,11 +189,11 @@ func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 `
 	bodyTempl :=
 		`<h2>Welcome!</h2>
-	gowebhello version: %s<br>
-	Golang version: %s<br>
+	gowebhello version %s runtime %s<br>
 	Application banner: %s<br>
 	Application arguments: %v<br>
 	Application dir: %s<br>
+	Process: %d<br>
 	Server hostname: %s<br>
 	Your address: %s<br>
 	Current time: %s<br>
@@ -221,7 +221,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 
 	now := time.Now()
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), banner, os.Args, cwd, host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), banner, os.Args, cwd, os.Getpid(), host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
