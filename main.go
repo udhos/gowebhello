@@ -39,6 +39,7 @@ func main() {
 
 	log.Print("version: ", helloVersion)
 	log.Print("runtime: ", runtime.Version())
+	log.Print("pid: ", os.Getpid())
 
 	currDir, err := os.Getwd()
 	if err != nil {
