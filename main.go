@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
 	"runtime"
 	"sort"
 	"strings"
@@ -22,6 +23,7 @@ var knownPaths []string
 var boottime time.Time
 var banner string
 var requests int64
+var usr *user.User
 
 func inc() int64 {
 	return atomic.AddInt64(&requests, 1)
@@ -40,6 +42,15 @@ func main() {
 	log.Print("version: ", helloVersion)
 	log.Print("runtime: ", runtime.Version())
 	log.Print("pid: ", os.Getpid())
+
+	var errUser error
+	usr, errUser = user.Current()
+	if errUser != nil {
+		log.Printf("current user error: %v", errUser)
+	}
+	if usr != nil {
+		log.Printf("user: %s (uid: %s)", usr.Username, usr.Uid)
+	}
 
 	currDir, err := os.Getwd()
 	if err != nil {
@@ -195,6 +206,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 	Application arguments: %v<br>
 	Application dir: %s<br>
 	Process: %d<br>
+	User: %s (uid: %s)<br>
 	Server hostname: %s<br>
 	Your address: %s<br>
 	Current time: %s<br>
@@ -222,7 +234,15 @@ func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 
 	now := time.Now()
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), banner, os.Args, cwd, os.Getpid(), host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
+	username := "?"
+	uid := "?"
+
+	if usr != nil {
+		username = usr.Username
+		uid = usr.Uid
+	}
+
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, now, time.Since(boottime), get(), errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
