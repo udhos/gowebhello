@@ -39,9 +39,7 @@ func main() {
 
 	tls := true
 
-	log.Print("version: ", helloVersion)
-	log.Print("runtime: ", runtime.Version())
-	log.Print("pid: ", os.Getpid())
+	log.Printf("version=%s runtime=%s pid=%d GOMAXPROCS=%d", helloVersion, runtime.Version(), os.Getpid(), runtime.GOMAXPROCS(0))
 
 	var errUser error
 	usr, errUser = user.Current()

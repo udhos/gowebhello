@@ -1,14 +1,12 @@
 #!/bin/sh
 
-[ -z "$GOPATH" ] && export GOPATH=$HOME/go
+gofmt -s -w ./gowebhello
+go tool fix ./gowebhello
+go tool vet ./gowebhello
 
-echo GOPATH=$GOPATH
+hash gosimple && gosimple ./gowebhello
+hash golint && golint ./gowebhello
+hash staticcheck && staticcheck ./gowebhello
 
-gofmt -s -w main.go
-go tool fix main.go
-go tool vet .
-[ -x $GOPATH/bin/gosimple ] && $GOPATH/bin/gosimple main.go
-[ -x $GOPATH/bin/golint ] && $GOPATH/bin/golint main.go
-[ -x $GOPATH/bin/staticcheck ] && $GOPATH/bin/staticcheck main.go
-go test github.com/udhos/gowebhello
-go install -v github.com/udhos/gowebhello
+go test ./gowebhello
+go install -v ./gowebhello

@@ -2,35 +2,39 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/udhos/gowebhello)](https://goreportcard.com/report/github.com/udhos/gowebhello)
 
 # gowebhello
+
 gowebhello is a simple golang replacement for 'python -m SimpleHTTPServer'.
 gowebhello can also be configured as an HTTPS web server using SSL certificates.
 
-Usage
-=====
+# Usage
 
-HTTPS
------
+## HTTPS
 
 If you want to use TLS, you will need a certificate:
 
     $ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.pem
 
-Building
---------
+## Building
 
-    $ export GOPATH=~/go ;# GOPATH no longer required, since go1.8
-    $ go get github.com/udhos/gowebhello
-    $ go install github.com/udhos/gowebhello
+### Without Modules, before Go 1.11
 
-Running
--------
+    # make sure GOPATH is either unset or properly set
+    go get github.com/udhos/gowebhello
+    go install github.com/udhos/gowebhello
+
+### With Modules, starting from Go 1.11
+
+    git clone https://github.com/udhos/gowebhello ;# clone outside of GOPATH
+    cd gowebhello
+    go install ./gowebhello
+
+## Running
 
 Use the '-h' switch to get command line help.
 
-    $ ~/go/bin/gowebhello -h
+    $ gowebhello -h
 
-Example with TLS
-----------------
+## Example with TLS
 
 Enable TLS by providing a certificate.
 If you enable TLS, HTTP port will be redirected to HTTPS port.
@@ -43,8 +47,7 @@ If you enable TLS, HTTP port will be redirected to HTTPS port.
 
     Then open https://localhost:8443
 
-Example without TLS
--------------------
+## Example without TLS
 
 If you do not provide a certificate, TLS will be disabled.
 
@@ -56,8 +59,7 @@ If you do not provide a certificate, TLS will be disabled.
 
     Then open http://localhost:8080
 
-Example with HTTPS only
------------------------
+## Example with HTTPS only
 
 You can disable HTTP by specifying the same port to both -addr and -httpsAddr.
 
@@ -66,5 +68,4 @@ You can disable HTTP by specifying the same port to both -addr and -httpsAddr.
     2017/06/08 11:25:46 using TCP ports HTTP=:8443 HTTPS=:8443 TLS=true
     2017/06/08 11:25:46 serving HTTPS on TCP :8443
 
-END
-===
+#END
