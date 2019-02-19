@@ -1,0 +1,13 @@
+[Unit]
+Description=Gowebhello Service
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/gowebhello
+ExecStart=/home/ec2-user/go/bin/gowebhello
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -2,7 +2,7 @@
 
 gofmt -s -w ./gowebhello
 go tool fix ./gowebhello
-go tool vet ./gowebhello
+go vet ./gowebhello
 
 hash gosimple && gosimple ./gowebhello
 hash golint && golint ./gowebhello
