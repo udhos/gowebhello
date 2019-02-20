@@ -208,6 +208,7 @@ Query: [%s]<br>
 	bodyTempl :=
 		`<h2>Welcome!</h2>
 	gowebhello version %s runtime %s<br>
+        Keepalive: %v<br>
 	Application banner: %s<br>
 	Application arguments: %v<br>
 	Application dir: %s<br>
@@ -249,7 +250,7 @@ Query: [%s]<br>
 		uid = usr.Uid
 	}
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, time.Since(boottime), get(), errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, time.Since(boottime), get(), errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
