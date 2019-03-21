@@ -68,4 +68,10 @@ You can disable HTTP by specifying the same port to both -addr and -httpsAddr.
     2017/06/08 11:25:46 using TCP ports HTTP=:8443 HTTPS=:8443 TLS=true
     2017/06/08 11:25:46 serving HTTPS on TCP :8443
 
+# Container image
+
+Find a small container image for gowebhello as `udhos/web-scratch` here:
+
+https://hub.docker.com/r/udhos/web-scratch
+
 #END
