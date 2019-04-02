@@ -281,7 +281,11 @@ func showReqBody(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	io.WriteString(w, fmt.Sprintf("<p>request body size: %d</p>\n", len(buf)))
+	bodySize := len(buf)
+
+	log.Printf("body size: %d", bodySize)
+
+	io.WriteString(w, fmt.Sprintf("<p>request body size: %d</p>\n", bodySize))
 
 	io.WriteString(w, "<pre>\n")
 	io.WriteString(w, string(buf))
