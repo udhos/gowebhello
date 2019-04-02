@@ -24,7 +24,6 @@ var boottime time.Time
 var banner string
 var requests int64
 var usr *user.User
-var env_banner string
 
 func inc() int64 {
 	return atomic.AddInt64(&requests, 1)
@@ -41,6 +40,10 @@ func main() {
 	tls := true
 
 	log.Printf("version=%s runtime=%s pid=%d GOMAXPROCS=%d", helloVersion, runtime.Version(), os.Getpid(), runtime.GOMAXPROCS(0))
+
+	if envBanner := os.Getenv("GWH_BANNER"); envBanner != "" {
+		banner = envBanner
+	}
 
 	var errUser error
 	usr, errUser = user.Current()
@@ -68,11 +71,6 @@ func main() {
 	flag.Parse()
 
 	keepalive := !disableKeepalive
-	
-	env_banner = os.Getenv("GWH_BANNER")
-        if env_banner != "" {
-                banner = env_banner
-        }
 
 	log.Print("banner: ", banner)
 	log.Print("keepalive: ", keepalive)
