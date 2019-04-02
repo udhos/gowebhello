@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -264,7 +265,28 @@ Query: [%s]<br>
 	io.WriteString(w, header)
 	io.WriteString(w, body)
 	showHeaders(w, r)
+	showReqBody(w, r)
 	io.WriteString(w, footer)
+}
+
+func showReqBody(w http.ResponseWriter, r *http.Request) {
+
+	io.WriteString(w, "<h2>Request Body</h2>\n")
+
+	buf, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		m := fmt.Sprintf("request body: %v", err)
+		log.Print(m)
+		io.WriteString(w, m)
+		return
+	}
+
+	io.WriteString(w, fmt.Sprintf("<p>request body size: %d</p>\n", len(buf)))
+
+	io.WriteString(w, "<pre>\n")
+	io.WriteString(w, string(buf))
+	io.WriteString(w, "\n")
+	io.WriteString(w, "</pre>\n")
 }
 
 func showHeaders(w http.ResponseWriter, r *http.Request) {
