@@ -41,8 +41,9 @@ func main() {
 
 	log.Printf("version=%s runtime=%s pid=%d GOMAXPROCS=%d", helloVersion, runtime.Version(), os.Getpid(), runtime.GOMAXPROCS(0))
 
+	defaultBanner := "banner default"
 	if envBanner := os.Getenv("GWH_BANNER"); envBanner != "" {
-		banner = envBanner
+		defaultBanner = envBanner
 	}
 
 	var errUser error
@@ -66,7 +67,7 @@ func main() {
 	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
 	flag.StringVar(&addr, "addr", ":8080", "HTTP listen address")
 	flag.StringVar(&httpsAddr, "httpsAddr", ":8443", "HTTPS listen address")
-	flag.StringVar(&banner, "banner", "deploy #4", "banner will be displayed")
+	flag.StringVar(&banner, "banner", defaultBanner, "banner will be displayed (env var GWH_BANNER sets default banner)")
 	flag.BoolVar(&disableKeepalive, "disableKeepalive", false, "disable keepalive")
 	flag.Parse()
 
