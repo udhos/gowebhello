@@ -34,13 +34,34 @@ func get() int64 {
 	return atomic.LoadInt64(&requests)
 }
 
+func getVersion() string {
+	return fmt.Sprintf("version=%s runtime=%s pid=%d host=%s GOMAXPROCS=%d", helloVersion, runtime.Version(), os.Getpid(), getHostname(), runtime.GOMAXPROCS(0))
+}
+
+func getHostname() string {
+	host, errHost := os.Hostname()
+	if errHost != nil {
+		host = host + " (host error: " + errHost.Error() + ")"
+	}
+	return host
+}
+
+func dumpVersion(path string) {
+	log.Printf("dumpVersion: writing to touch=%s", path)
+	v := getVersion()
+	err := ioutil.WriteFile(path, []byte(v), 0640)
+	if err != nil {
+		log.Printf("dumpVersion: touch=%s: %v", path, err)
+	}
+}
+
 func main() {
 
 	boottime = time.Now()
 
 	tls := true
 
-	log.Printf("version=%s runtime=%s pid=%d GOMAXPROCS=%d", helloVersion, runtime.Version(), os.Getpid(), runtime.GOMAXPROCS(0))
+	log.Print(getVersion())
 
 	defaultBanner := "banner default"
 	if envBanner := os.Getenv("GWH_BANNER"); envBanner != "" {
@@ -63,14 +84,22 @@ func main() {
 
 	var addr, httpsAddr, key, cert string
 	var disableKeepalive bool
+	var touch string
+	var showVersion bool
 
 	flag.StringVar(&key, "key", "key.pem", "TLS key file")
 	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
 	flag.StringVar(&addr, "addr", ":8080", "HTTP listen address")
 	flag.StringVar(&httpsAddr, "httpsAddr", ":8443", "HTTPS listen address")
 	flag.StringVar(&banner, "banner", defaultBanner, "banner will be displayed (env var GWH_BANNER sets default banner)")
+	flag.StringVar(&touch, "touch", "", "write version info into this file, if specified")
+	flag.BoolVar(&showVersion, "version", false, "does not actually run")
 	flag.BoolVar(&disableKeepalive, "disableKeepalive", false, "disable keepalive")
 	flag.Parse()
+
+	if touch != "" {
+		dumpVersion(touch)
+	}
 
 	keepalive := !disableKeepalive
 
@@ -85,6 +114,10 @@ func main() {
 	if !fileExists(cert) {
 		log.Printf("TLS cert file not found: %s - disabling TLS", cert)
 		tls = false
+	}
+
+	if showVersion {
+		return
 	}
 
 	// default handler
@@ -241,10 +274,7 @@ Query: [%s]<br>
 		cwd = cwd + " (error: " + errCwd.Error() + ")"
 	}
 
-	host, errHost := os.Hostname()
-	if errHost != nil {
-		host = host + " (error: " + errHost.Error() + ")"
-	}
+	host := getHostname()
 
 	now := time.Now()
 
