@@ -24,6 +24,7 @@ var knownPaths []string
 var boottime time.Time
 var banner string
 var requests int64
+var quota int64
 var usr *user.User
 
 func inc() int64 {
@@ -95,6 +96,7 @@ func main() {
 	flag.StringVar(&touch, "touch", "", "write version info into this file, if specified")
 	flag.BoolVar(&showVersion, "version", false, "does not actually run")
 	flag.BoolVar(&disableKeepalive, "disableKeepalive", false, "disable keepalive")
+	flag.Int64Var(&quota, "quota", 0, "if defined, service is terminated after serving that amount of requests")
 	flag.Parse()
 
 	if touch != "" {
@@ -126,6 +128,8 @@ func main() {
 	registerStatic("/www/", currDir)
 
 	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
+
+	log.Printf("requests quota: %d", quota)
 
 	if tls {
 		serveHTTPS(addr, httpsAddr, cert, key, keepalive)
@@ -206,6 +210,14 @@ func (handler staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	count := inc()
 	log.Printf("staticHandler.ServeHTTP req=%d url=%s from=%s", count, r.URL.Path, r.RemoteAddr)
 	handler.innerHandler.ServeHTTP(w, r)
+	checkQuota("staticHandler.ServeHTTP", count)
+}
+
+func checkQuota(label string, count int64) {
+	if count > quota {
+		log.Printf("%s req=%d quota=%d EXITING", label, count, quota)
+		os.Exit(0)
+	}
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
@@ -297,6 +309,8 @@ Query: [%s]<br>
 	showHeaders(w, r)
 	showReqBody(w, r)
 	io.WriteString(w, footer)
+
+	checkQuota("rootHandler", count)
 }
 
 func showReqBody(w http.ResponseWriter, r *http.Request) {
