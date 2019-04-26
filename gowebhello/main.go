@@ -129,7 +129,7 @@ func main() {
 
 	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
 
-	log.Printf("requests quota: %d", quota)
+	log.Printf("requests quota: %d (0=unlimited)", quota)
 
 	if tls {
 		serveHTTPS(addr, httpsAddr, cert, key, keepalive)
@@ -214,7 +214,7 @@ func (handler staticHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func checkQuota(label string, count int64) {
-	if count > quota {
+	if quota > 0 && count > quota {
 		log.Printf("%s req=%d quota=%d EXITING", label, count, quota)
 		os.Exit(0)
 	}
