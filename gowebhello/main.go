@@ -270,7 +270,7 @@ Query: [%s]<br>
 	Request method=%s host=%s path=[%s] query=[%s]<br>
 	Current time: %s<br>
 	Uptime: %s<br>
-	Requests: %d<br>
+	Requests: %d (Quota: %d)<br>
     %s
     <h2>All known paths:</h2>
     %s
@@ -298,7 +298,7 @@ Query: [%s]<br>
 		uid = usr.Uid
 	}
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, time.Since(boottime), get(), errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, time.Since(boottime), get(), quota, errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
