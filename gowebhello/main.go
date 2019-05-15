@@ -100,7 +100,7 @@ func main() {
 	flag.BoolVar(&disableKeepalive, "disableKeepalive", false, "disable keepalive")
 	flag.Int64Var(&quota, "quota", 0, "if defined, service is terminated after serving that amount of requests")
 	flag.BoolVar(&exitOnQuota, "exitOnQuota", false, "exit if quota reached")
-	flag.IntVar(&quotaStatus, "quotaStatus", 500, "http status code for if quota reached")
+	flag.IntVar(&quotaStatus, "quotaStatus", 500, "http status code for quota reached")
 	flag.Parse()
 
 	if touch != "" {
