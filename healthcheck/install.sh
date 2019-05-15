@@ -25,6 +25,9 @@ do_install() {
 	systemctl daemon-reload
 	systemctl enable healthcheck.service
 	systemctl reload-or-restart healthcheck.service
+
+	msg check service: systemctl status healthcheck
+	msg check logs:    journalctl -u healthcheck -f
 }
 
 do_uninstall() {
