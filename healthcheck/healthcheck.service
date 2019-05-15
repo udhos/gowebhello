@@ -1,0 +1,13 @@
+[Unit]
+Description=Health Check Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/app
+ExecStart=/app/healthcheck.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
