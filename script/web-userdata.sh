@@ -3,9 +3,7 @@
 [ -d /web ] || mkdir /web
 cd /web
 
-if [ ! -f gowebhello ]; then
-	wget -O gowebhello https://github.com/udhos/gowebhello/releases/download/v0.5/gowebhello_linux_amd64
-fi
+[ -f gowebhello ] || wget -O gowebhello https://github.com/udhos/gowebhello/releases/download/v0.5/gowebhello_linux_amd64
 
 chmod a+rx gowebhello
 
