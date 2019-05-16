@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	helloVersion = "0.5"
+	helloVersion = "0.6"
 )
 
 var knownPaths []string
