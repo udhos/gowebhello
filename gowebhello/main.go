@@ -11,10 +11,10 @@ import (
 	"os/user"
 	"runtime"
 	"sort"
-	//"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
+	"unicode"
 )
 
 const (
@@ -26,6 +26,7 @@ var boottime time.Time
 var banner string
 var requests int64
 var quota int64
+var quotaDuration time.Duration
 var exitOnQuota bool
 var quotaStatus int
 var usr *user.User
@@ -91,6 +92,7 @@ func main() {
 	var disableKeepalive bool
 	var touch string
 	var showVersion bool
+	var quotaTime string
 
 	flag.StringVar(&key, "key", "key.pem", "TLS key file")
 	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
@@ -101,7 +103,9 @@ func main() {
 	flag.BoolVar(&showVersion, "version", false, "does not actually run")
 	flag.BoolVar(&disableKeepalive, "disableKeepalive", false, "disable keepalive")
 	flag.Int64Var(&quota, "quota", 0, "if defined, service is terminated after serving that amount of requests")
+	flag.StringVar(&quotaTime, "quotaTime", "", "if defined, service is terminated after serving that amount of time")
 	flag.BoolVar(&exitOnQuota, "exitOnQuota", false, "exit if quota reached")
+	flag.IntVar(&quotaStatus, "quotaStatus", 500, "http status code for quota reached")
 	flag.BoolVar(&burnCPU, "burnCpu", false, "enable /burncpu path")
 	flag.Parse()
 
@@ -111,8 +115,25 @@ func main() {
 
 	keepalive := !disableKeepalive
 
+	// append "s" to all-numeric duration string
+	if quotaTime != "" {
+		last := len(quotaTime) - 1
+		if unicode.IsDigit(rune(quotaTime[last])) {
+			quotaTime += "s"
+		}
+	}
+
+	var errDur error
+	quotaDuration, errDur = time.ParseDuration(quotaTime)
+	if errDur != nil {
+		log.Printf("quotaTime: %v", errDur)
+	}
+
 	log.Print("banner: ", banner)
 	log.Print("keepalive: ", keepalive)
+	log.Printf("burnCpu=%v", burnCPU)
+	log.Printf("quotaTime=%v", quotaDuration)
+	log.Printf("requests quota=%d (0=unlimited) exitOnQuota=%v quotaStatus=%d", quota, exitOnQuota, quotaStatus)
 
 	if !fileExists(key) {
 		log.Printf("TLS key file not found: %s - disabling TLS", key)
@@ -139,8 +160,6 @@ func main() {
 	registerStatic("/www/", currDir)
 
 	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
-	log.Printf("requests quota=%d (0=unlimited) exitOnQuota=%v quotaStatus=%d", quota, exitOnQuota, quotaStatus)
-	log.Printf("burnCpu=%v", burnCPU)
 
 	if tls {
 		serveHTTPS(addr, httpsAddr, cert, key, keepalive)
@@ -240,6 +259,18 @@ func checkQuota(label string, count int64) bool {
 		log.Printf("%s req=%d quota=%d exitOnQuota=%v quotaStatus=%d reached", label, count, quota, exitOnQuota, quotaStatus)
 		return true
 	}
+	if quotaDuration > 0 {
+		uptime := time.Since(boottime)
+		timeLeft := quotaDuration - uptime
+		if timeLeft <= 0 {
+			if exitOnQuota {
+				log.Printf("%s req=%d exitOnQuota=%v uptime=%v quotaTime=%v timeLeft=%v reached EXITING", label, count, exitOnQuota, uptime, quotaDuration, timeLeft)
+				os.Exit(0)
+			}
+			log.Printf("%s req=%d exitOnQuota=%v uptime=%v quotaTime=%v timeLeft=%v reached", label, count, exitOnQuota, uptime, quotaDuration, timeLeft)
+			return true
+		}
+	}
 	return false
 }
 
@@ -317,7 +348,7 @@ Query: [%s]<br>
 	Request method=%s host=%s path=[%s] query=[%s]<br>
 	Current time: %s<br>
 	Uptime: %s<br>
-	Requests: %d (Quota=%d ExitOnQuota=%v QuotaStaus=%d)<br>
+	Requests: %d (Quota=%d ExitOnQuota=%v QuotaStaus=%d QuotaTime=%v TimeLeft=%v)<br>
 	BurnCPU: %v<br>
     %s
     <h2>All known paths:</h2>
@@ -346,7 +377,13 @@ Query: [%s]<br>
 		uid = usr.Uid
 	}
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, time.Since(boottime), get(), quota, exitOnQuota, quotaStatus, burnCPU, errMsg, paths)
+	uptime := time.Since(boottime)
+	timeLeft := quotaDuration - uptime
+	if timeLeft < 0 {
+		timeLeft = 0
+	}
+
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, uptime, get(), quota, exitOnQuota, quotaStatus, quotaDuration, timeLeft, burnCPU, errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
