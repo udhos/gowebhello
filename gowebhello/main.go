@@ -11,6 +11,7 @@ import (
 	"os/user"
 	"runtime"
 	"sort"
+	//"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -28,6 +29,7 @@ var quota int64
 var exitOnQuota bool
 var quotaStatus int
 var usr *user.User
+var burnCPU bool
 
 func inc() int64 {
 	return atomic.AddInt64(&requests, 1)
@@ -100,7 +102,7 @@ func main() {
 	flag.BoolVar(&disableKeepalive, "disableKeepalive", false, "disable keepalive")
 	flag.Int64Var(&quota, "quota", 0, "if defined, service is terminated after serving that amount of requests")
 	flag.BoolVar(&exitOnQuota, "exitOnQuota", false, "exit if quota reached")
-	flag.IntVar(&quotaStatus, "quotaStatus", 500, "http status code for quota reached")
+	flag.BoolVar(&burnCPU, "burnCpu", false, "enable /burncpu path")
 	flag.Parse()
 
 	if touch != "" {
@@ -129,11 +131,16 @@ func main() {
 	// default handler
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { rootHandler(w, r, keepalive) })
 
+	if burnCPU {
+		http.HandleFunc("/burncpu", func(w http.ResponseWriter, r *http.Request) { burncpuHandler(w, r, keepalive) })
+		http.HandleFunc("/burncpu/", func(w http.ResponseWriter, r *http.Request) { burncpuHandler(w, r, keepalive) })
+	}
+
 	registerStatic("/www/", currDir)
 
 	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
-
 	log.Printf("requests quota=%d (0=unlimited) exitOnQuota=%v quotaStatus=%d", quota, exitOnQuota, quotaStatus)
+	log.Printf("burnCpu=%v", burnCPU)
 
 	if tls {
 		serveHTTPS(addr, httpsAddr, cert, key, keepalive)
@@ -236,6 +243,25 @@ func checkQuota(label string, count int64) bool {
 	return false
 }
 
+func burncpuHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
+	count := inc()
+	log.Printf("burncpuHandler: req=%d from=%s", count, r.RemoteAddr)
+
+	if reached := checkQuota("burncpuHandler", count); reached {
+		quotaError(w)
+		return
+	}
+
+	burn()
+
+	io.WriteString(w, "done\n")
+}
+
+func burn() {
+	for i := 0; i < 2000000000; i++ {
+	}
+}
+
 func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 	count := inc()
 	log.Printf("rootHandler: req=%d from=%s", count, r.RemoteAddr)
@@ -292,6 +318,7 @@ Query: [%s]<br>
 	Current time: %s<br>
 	Uptime: %s<br>
 	Requests: %d (Quota=%d ExitOnQuota=%v QuotaStaus=%d)<br>
+	BurnCPU: %v<br>
     %s
     <h2>All known paths:</h2>
     %s
@@ -319,7 +346,7 @@ Query: [%s]<br>
 		uid = usr.Uid
 	}
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, time.Since(boottime), get(), quota, exitOnQuota, quotaStatus, errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, time.Since(boottime), get(), quota, exitOnQuota, quotaStatus, burnCPU, errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
