@@ -153,6 +153,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { rootHandler(w, r, keepalive) })
 
 	if burnCPU {
+		log.Print("burnCpu: enabling path /burncpu")
 		http.HandleFunc("/burncpu", func(w http.ResponseWriter, r *http.Request) { burncpuHandler(w, r, keepalive) })
 		http.HandleFunc("/burncpu/", func(w http.ResponseWriter, r *http.Request) { burncpuHandler(w, r, keepalive) })
 	}
