@@ -115,18 +115,19 @@ func main() {
 
 	keepalive := !disableKeepalive
 
-	// append "s" to all-numeric duration string
 	if quotaTime != "" {
+		// append "s" to all-numeric duration string
 		last := len(quotaTime) - 1
 		if unicode.IsDigit(rune(quotaTime[last])) {
 			quotaTime += "s"
 		}
-	}
 
-	var errDur error
-	quotaDuration, errDur = time.ParseDuration(quotaTime)
-	if errDur != nil {
-		log.Printf("quotaTime: %v", errDur)
+		// parse quotaTime
+		var errDur error
+		quotaDuration, errDur = time.ParseDuration(quotaTime)
+		if errDur != nil {
+			log.Printf("quotaTime: %v", errDur)
+		}
 	}
 
 	log.Print("banner: ", banner)
