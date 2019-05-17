@@ -14,7 +14,7 @@ app_dir=/web
 [ -d $app_dir ] || mkdir $app_dir
 cd $app_dir || echo >&2 "could not cd: app_dir=$app_dir"
 
-[ -f gowebhello ] || curl -o gowebhello "$APP_URL"
+[ -f gowebhello ] || curl -L -o gowebhello "$APP_URL"
 
 chmod a+rx gowebhello
 
