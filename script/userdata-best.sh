@@ -12,7 +12,7 @@ fi
 app_dir=/web
 
 [ -d $app_dir ] || mkdir $app_dir
-cd $app_dir
+cd $app_dir || echo >&2 "could not cd: app_dir=$app_dir"
 
 [ -f gowebhello ] || curl -o gowebhello "$APP_URL"
 
@@ -41,7 +41,6 @@ __EOF__
 #
 # healthcheck script
 #
-
 
 cat >$app_dir/healthcheck.sh <<'__EOF__' ;# caution: quotes force full here-doc as literal
 #!/bin/bash
@@ -92,4 +91,3 @@ systemctl restart healthcheck.service
 
 echo "check service: systemctl status web healthcheck"
 echo "check logs:    journalctl -u web -u healthcheck -f"
-
