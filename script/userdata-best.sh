@@ -2,6 +2,8 @@
 
 #APP_URL=https://github.com/udhos/gowebhello/releases/download/v0.6/gowebhello_linux_amd64
 
+echo >&2 "env var APP_URL=[$APP_URL]"
+
 if [ -z "$APP_URL" ]; then
 	echo >&2 "missing env var APP_URL=[$APP_URL]"
 	exit 1
@@ -12,7 +14,7 @@ app_dir=/web
 [ -d $app_dir ] || mkdir $app_dir
 cd $app_dir
 
-[ -f gowebhello ] || curl -o gowebhello $APP_URL
+[ -f gowebhello ] || curl -o gowebhello "$APP_URL"
 
 chmod a+rx gowebhello
 
@@ -40,17 +42,19 @@ __EOF__
 # healthcheck script
 #
 
-cat >$app_dir/healthcheck.sh <<__EOF__
+
+cat >$app_dir/healthcheck.sh <<'__EOF__' ;# caution: quotes force full here-doc as literal
 #!/bin/bash
 
 url=http://localhost:8080/www/
 
 while :; do
         sleep 5
-        http_code=$(curl -o /dev/null -s -I -X GET -w "%{http_code}" $url)
+        http_code=$(curl -o /dev/null -s -I -X GET -w '%{http_code}' "$url")
         exit_status=$?
-        echo "exit_status=$exit_status http_code=$http_code"
+        echo >&2 "exit_status=$exit_status http_code=$http_code"
         if [ "$exit_status" -ne 0 ] || [ "$http_code" != 200 ]; then
+        	echo >&2 restarting: systemctl restart web.service
 		systemctl restart web.service
         fi
 done
@@ -86,8 +90,6 @@ systemctl restart web.service
 systemctl enable healthcheck.service
 systemctl restart healthcheck.service
 
-echo "check service: systemctl status web"
-echo "check service: systemctl status healthcheck"
-echo "check logs:    journalctl -u web -f"
-echo "check logs:    journalctl -u healthcheck -f"
+echo "check service: systemctl status web healthcheck"
+echo "check logs:    journalctl -u web -u healthcheck -f"
 
