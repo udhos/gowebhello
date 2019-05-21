@@ -74,6 +74,11 @@ func main() {
 		defaultBanner = envBanner
 	}
 
+	defaultAddr := ":8080"
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		defaultAddr = ":" + envPort
+	}
+
 	var errUser error
 	usr, errUser = user.Current()
 	if errUser != nil {
@@ -96,7 +101,7 @@ func main() {
 
 	flag.StringVar(&key, "key", "key.pem", "TLS key file")
 	flag.StringVar(&cert, "cert", "cert.pem", "TLS cert file")
-	flag.StringVar(&addr, "addr", ":8080", "HTTP listen address")
+	flag.StringVar(&addr, "addr", defaultAddr, "HTTP listen address (env var PORT sets default port)")
 	flag.StringVar(&httpsAddr, "httpsAddr", ":8443", "HTTPS listen address")
 	flag.StringVar(&banner, "banner", defaultBanner, "banner will be displayed (env var GWH_BANNER sets default banner)")
 	flag.StringVar(&touch, "touch", "", "write version info into this file, if specified")
