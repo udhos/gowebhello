@@ -41,7 +41,7 @@ func get() int64 {
 }
 
 func getVersion() string {
-	return fmt.Sprintf("version=%s runtime=%s pid=%d host=%s GOMAXPROCS=%d", helloVersion, runtime.Version(), os.Getpid(), getHostname(), runtime.GOMAXPROCS(0))
+	return fmt.Sprintf("version=%s runtime=%s pid=%d host=%s GOMAXPROCS=%d OS=%s ARCH=%s", helloVersion, runtime.Version(), os.Getpid(), getHostname(), runtime.GOMAXPROCS(0), runtime.GOOS, runtime.GOARCH)
 }
 
 func getHostname() string {
@@ -338,7 +338,7 @@ Query: [%s]<br>
 `
 	bodyTempl :=
 		`<h2>Welcome!</h2>
-	gowebhello version %s runtime %s<br>
+	gowebhello version %s runtime %s os=%s arch=%s<br>
         Keepalive: %v<br>
 	Application banner: %s<br>
 	Application arguments: %v<br>
@@ -385,7 +385,7 @@ Query: [%s]<br>
 		timeLeft = 0
 	}
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, uptime, get(), quota, exitOnQuota, quotaStatus, quotaDuration, timeLeft, burnCPU, errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), runtime.GOOS, runtime.GOARCH, keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, uptime, get(), quota, exitOnQuota, quotaStatus, quotaDuration, timeLeft, burnCPU, errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
