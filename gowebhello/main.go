@@ -31,6 +31,7 @@ var exitOnQuota bool
 var quotaStatus int
 var usr *user.User
 var burnCPU bool
+var listenAddr, listenAddrHTTPS string
 
 func inc() int64 {
 	return atomic.AddInt64(&requests, 1)
@@ -68,6 +69,8 @@ func main() {
 	tls := true
 
 	log.Print(getVersion())
+
+	log.Printf("GWH_BANNER='%s' PORT='%s'", os.Getenv("GWH_BANNER"), os.Getenv("PORT"))
 
 	defaultBanner := "banner default"
 	if envBanner := os.Getenv("GWH_BANNER"); envBanner != "" {
@@ -165,6 +168,10 @@ func main() {
 	}
 
 	registerStatic("/www/", currDir)
+
+	// save for html
+	listenAddr = addr
+	listenAddrHTTPS = httpsAddr
 
 	log.Printf("using TCP ports HTTP=%s HTTPS=%s TLS=%v", addr, httpsAddr, tls)
 
@@ -351,6 +358,7 @@ Query: [%s]<br>
 	Process: %d<br>
 	User: %s (uid: %s)<br>
 	Server hostname: %s<br>
+	Listen: HTTP=%s HTTPS=%s<br>
 	Your address: %s<br>
 	Request method=%s host=%s path=[%s] query=[%s]<br>
 	Current time: %s<br>
@@ -390,7 +398,7 @@ Query: [%s]<br>
 		timeLeft = 0
 	}
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), runtime.GOOS, runtime.GOARCH, keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, uptime, get(), quota, exitOnQuota, quotaStatus, quotaDuration, timeLeft, burnCPU, errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), runtime.GOOS, runtime.GOARCH, keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, listenAddr, listenAddrHTTPS, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, uptime, get(), quota, exitOnQuota, quotaStatus, quotaDuration, timeLeft, burnCPU, errMsg, paths)
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
