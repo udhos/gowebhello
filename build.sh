@@ -9,4 +9,4 @@ hash golint && golint ./gowebhello
 hash staticcheck && staticcheck ./gowebhello
 
 go test ./gowebhello
-go install -v ./gowebhello
+CGO_ENABLED=0 go install -v ./gowebhello
