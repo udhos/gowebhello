@@ -84,9 +84,9 @@ WantedBy=multi-user.target
 __EOF__
 
 systemctl daemon-reload
-systemctl enable web.service
+systemctl enable web.service --now
 systemctl restart web.service
-systemctl enable healthcheck.service
+systemctl enable healthcheck.service --now
 systemctl restart healthcheck.service
 
 echo "check service: systemctl status web healthcheck"
