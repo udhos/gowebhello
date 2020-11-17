@@ -74,4 +74,15 @@ Find a small container image for gowebhello as `udhos/web-scratch` here:
 
 https://hub.docker.com/r/udhos/web-scratch
 
-#END
+or modify the Dockerfile, and build your own custom image
+```sh
+git clone https://github.com/brownchow/gowebhello.git
+cd gowebhello
+docker  build .  -t  udhos/web-scratch:v0.x
+```
+and run it
+```sh
+docker container run  -p 8080:8080  udhos/gowebhello:v0.x
+```
+
+# END
