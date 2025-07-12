@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
+
 	"log"
 	"net/http"
 	"os"
@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	helloVersion = "0.8"
+	helloVersion = "0.8.1"
 )
 
 var knownPaths []string
@@ -56,7 +56,7 @@ func getHostname() string {
 func dumpVersion(path string) {
 	log.Printf("dumpVersion: writing to touch=%s", path)
 	v := getVersion()
-	err := ioutil.WriteFile(path, []byte(v), 0640)
+	err := os.WriteFile(path, []byte(v), 0640)
 	if err != nil {
 		log.Printf("dumpVersion: touch=%s: %v", path, err)
 	}
@@ -299,11 +299,13 @@ func burncpuHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 
 	burn()
 
-	io.WriteString(w, "done\n")
+	_, _ = io.WriteString(w, "done\n")
 }
 
 func burn() {
-	for i := 0; i < 2000000000; i++ {
+	i := 0
+	for range 2000000000 {
+		i++
 	}
 }
 
@@ -404,22 +406,22 @@ Query: [%s]<br>
 		w.Header().Set("Connection", "close")
 	}
 
-	io.WriteString(w, header)
-	io.WriteString(w, body)
+	_, _ = io.WriteString(w, header)
+	_, _ = io.WriteString(w, body)
 	showHeaders(w, r)
 	showReqBody(w, r)
-	io.WriteString(w, footer)
+	_, _ = io.WriteString(w, footer)
 }
 
 func showReqBody(w http.ResponseWriter, r *http.Request) {
 
-	io.WriteString(w, "<h2>Request Body</h2>\n")
+	_, _ = io.WriteString(w, "<h2>Request Body</h2>\n")
 
-	buf, err := ioutil.ReadAll(r.Body)
+	buf, err := io.ReadAll(r.Body)
 	if err != nil {
 		m := fmt.Sprintf("request body: %v", err)
 		log.Print(m)
-		io.WriteString(w, m)
+		_, _ = io.WriteString(w, m)
 		return
 	}
 
@@ -427,16 +429,16 @@ func showReqBody(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("body size: %d", bodySize)
 
-	io.WriteString(w, fmt.Sprintf("<p>request body size: %d</p>\n", bodySize))
+	_, _ = io.WriteString(w, fmt.Sprintf("<p>request body size: %d</p>\n", bodySize))
 
-	io.WriteString(w, "<pre>\n")
-	io.WriteString(w, string(buf))
-	io.WriteString(w, "\n")
-	io.WriteString(w, "</pre>\n")
+	_, _ = io.WriteString(w, "<pre>\n")
+	_, _ = io.Writer.Write(w, buf)
+	_, _ = io.WriteString(w, "\n")
+	_, _ = io.WriteString(w, "</pre>\n")
 }
 
 func showHeaders(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "<h2>Headers</h2>\n")
+	_, _ = io.WriteString(w, "<h2>Headers</h2>\n")
 
 	var headers []string
 	for k, v := range r.Header {
@@ -448,6 +450,6 @@ func showHeaders(w http.ResponseWriter, r *http.Request) {
 	sort.Strings(headers)
 
 	for _, h := range headers {
-		io.WriteString(w, h)
+		_, _ = io.WriteString(w, h)
 	}
 }
