@@ -1,3 +1,4 @@
+// Package main implements a simple web server in Go.
 package main
 
 import (
@@ -18,7 +19,7 @@ import (
 )
 
 const (
-	helloVersion = "0.8.1"
+	helloVersion = "0.8.2"
 )
 
 var knownPaths []string
@@ -288,7 +289,7 @@ func checkQuota(label string, count int64) bool {
 	return false
 }
 
-func burncpuHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
+func burncpuHandler(w http.ResponseWriter, r *http.Request, _ bool) {
 	count := inc()
 	log.Printf("burncpuHandler: req=%d from=%s", count, r.RemoteAddr)
 

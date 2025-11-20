@@ -1,3 +1,3 @@
 module github.com/udhos/gowebhello
 
-go 1.24.5
+go 1.25.4
