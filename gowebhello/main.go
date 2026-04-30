@@ -19,13 +19,13 @@ import (
 )
 
 const (
-	helloVersion = "0.8.2"
+	helloVersion = "0.8.3"
 )
 
 var knownPaths []string
 var boottime time.Time
 var banner string
-var requests int64
+var requests atomic.Int64
 var quota int64
 var quotaDuration time.Duration
 var exitOnQuota bool
@@ -35,11 +35,11 @@ var burnCPU bool
 var listenAddr, listenAddrHTTPS string
 
 func inc() int64 {
-	return atomic.AddInt64(&requests, 1)
+	return requests.Add(1)
 }
 
 func get() int64 {
-	return atomic.LoadInt64(&requests)
+	return requests.Load()
 }
 
 func getVersion() string {
@@ -321,9 +321,9 @@ func rootHandler(w http.ResponseWriter, r *http.Request, keepalive bool) {
 		return
 	}
 
-	var paths string
+	var paths strings.Builder
 	for _, p := range knownPaths {
-		paths += fmt.Sprintf("<a href=\"%s\">%s</a> <br>", p, p)
+		paths.WriteString(fmt.Sprintf("<a href=\"%s\">%s</a> <br>", p, p))
 	}
 
 	var errMsg string
@@ -396,12 +396,9 @@ Query: [%s]<br>
 	}
 
 	uptime := time.Since(boottime)
-	timeLeft := quotaDuration - uptime
-	if timeLeft < 0 {
-		timeLeft = 0
-	}
+	timeLeft := max(quotaDuration-uptime, 0)
 
-	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), runtime.GOOS, runtime.GOARCH, keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, listenAddr, listenAddrHTTPS, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, uptime, get(), quota, exitOnQuota, quotaStatus, quotaDuration, timeLeft, burnCPU, errMsg, paths)
+	body := fmt.Sprintf(bodyTempl, helloVersion, runtime.Version(), runtime.GOOS, runtime.GOARCH, keepalive, banner, os.Args, cwd, os.Getpid(), username, uid, host, listenAddr, listenAddrHTTPS, r.RemoteAddr, r.Method, r.Host, r.URL.Path, r.URL.RawQuery, now, uptime, get(), quota, exitOnQuota, quotaStatus, quotaDuration, timeLeft, burnCPU, errMsg, paths.String())
 
 	if !keepalive {
 		w.Header().Set("Connection", "close")
